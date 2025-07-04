@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Desbloqueio por padrão</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 40px;
+    }
+    #grid {
+      width: 240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
+      grid-gap: 15px;
+      user-select: none;
+    }
+    .dot {
+      width: 60px;
+      height: 60px;
+      border: 3px solid #333;
+      border-radius: 50%;
+      margin: auto;
+      background-color: white;
+      touch-action: none;
+    }
+    .dot.active {
+      background-color: #4caf50;
+      border-color: #4caf50;
+    }
+    #patternCode {
+      margin-top: 30px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    #btnClear {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Desenhe o padrão</h1>
+<div id="grid">
+  <div class="dot" data-id="1"></div>
+  <div class="dot" data-id="2"></div>
+  <div class="dot" data-id="3"></div>
+  <div class="dot" data-id="4"></div>
+  <div class="dot" data-id="5"></div>
+  <div class="dot" data-id="6"></div>
+  <div class="dot" data-id="7"></div>
+  <div class="dot" data-id="8"></div>
+  <div class="dot" data-id="9"></div>
+</div>
+
+<div id="patternCode">Padrão: </div>
+<button id="btnClear">Limpar</button>
+<button id="btnSubmit">Enviar</button>
+
+<script>
+  const dots = document.querySelectorAll('.dot');
+  const patternCode = document.getElementById('patternCode');
+  const btnClear = document.getElementById('btnClear');
+  const btnSubmit = document.getElementById('btnSubmit');
+
+  let pattern = [];
+  let isDrawing = false;
+
+  function activateDot(dot) {
+    if (!pattern.includes(dot.dataset.id)) {
+      pattern.push(dot.dataset.id);
+      dot.classList.add('active');
+      patternCode.textContent = 'Padrão: ' + pattern.join('-');
+    }
+  }
+
+  function clearPattern() {
+    pattern = [];
+    dots.forEach(dot => dot.classList.remove('active'));
+    patternCode.textContent = 'Padrão: ';
+  }
+
+  // Para desktop: usar mouse events
+  document.getElementById('grid').addEventListener('mousedown', e => {
+    if (e.target.classList.contains('dot')) {
+      isDrawing = true;
+      activateDot(e.target);
+    }
+  });
+  document.getElementById('grid').addEventListener('mouseover', e => {
+    if (isDrawing && e.target.classList.contains('dot')) {
+      activateDot(e.target);
+    }
+  });
+  document.addEventListener('mouseup', e => {
+    if (isDrawing) {
+      isDrawing = false;
+    }
+  });
+
+  // Para touch devices: touch events
+  document.getElementById('grid').addEventListener('touchstart', e => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (el && el.classList.contains('dot')) {
+      isDrawing = true;
+      activateDot(el);
+    }
+  }, { passive: false });
+  document.getElementById('grid').addEventListener('touchmove', e => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (isDrawing && el && el.classList.contains('dot')) {
+      activateDot(el);
+    }
+  }, { passive: false });
+  document.addEventListener('touchend', e => {
+    if (isDrawing) {
+      isDrawing = false;
+    }
+  });
+
+  btnClear.addEventListener('click', clearPattern);
+
+  btnSubmit.addEventListener('click', () => {
+    if (pattern.length === 0) {
+      alert('Desenhe um padrão antes de enviar!');
+      return;
+    }
+    const patternStr = pattern.join('');
+    // Vai para a página display.html passando o padrão na URL
+    window.location.href = `display.html?pattern=${patternStr}`;
+  });
+</script>
+
+</body>
+</html>
